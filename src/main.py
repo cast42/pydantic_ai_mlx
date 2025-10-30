@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import Final
+from typing import TYPE_CHECKING, Final, cast
 
 import logfire
 from mlx_lm import load
 from pydantic_ai import Agent
 from pydantic_ai.models.outlines import OutlinesModel
 from pydantic_ai.settings import ModelSettings
+
+if TYPE_CHECKING:
+    from mlx.nn.layers.base import Module as MlxModule
+    from transformers import PreTrainedTokenizerBase
 
 MLX_MODEL_ENV: Final = "MLX_MODEL"
 DEFAULT_MODEL_ID: Final = "mlx-community/Qwen3-4B-Thinking-2507-4bit"
@@ -26,13 +30,16 @@ _agent: Agent[None, str] | None = None
 def build_agent(model_id: str) -> Agent[None, str]:
     """Construct a Pydantic AI agent backed by an Outlines MLX model."""
 
-    # Create the OutlinesModel wrapper
-    mlx_model = OutlinesModel.from_mlxlm(
-        *load(
-            model_id,
-            tokenizer_config={"eos_token": "<|endoftext|>", "trust_remote_code": True},
-        )
+    load_result = load(
+        model_id,
+        tokenizer_config={"eos_token": "<|endoftext|>", "trust_remote_code": True},
+        return_config=True,
     )
+    model, tokenizer, _config = cast(
+        "tuple[MlxModule, PreTrainedTokenizerBase, dict[str, object]]",
+        load_result,
+    )
+    mlx_model = OutlinesModel.from_mlxlm(model, tokenizer)
     return Agent(
         mlx_model,
         system_prompt="You are a Spanish tutor. Help the user learn Spanish. ONLY respond in Spanish.",

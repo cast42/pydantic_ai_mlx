@@ -1,4 +1,4 @@
-site_name: python-minimal-boilerplate
+site_name: Pydantic AI MLX
 site_description: Minimal Python project template with uv, just, and Logfire.
 site_author: Your Name
 nav:

@@ -1,1 +1,1 @@
-"""Source package for python-minimal-boilerplate."""
+"""Source package for the Pydantic AI MLX sample project."""

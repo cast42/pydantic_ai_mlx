@@ -1,15 +1,18 @@
-# Python Minimal Boilerplate
+# Pydantic AI MLX
 
-Welcome to the documentation for the minimal Python boilerplate project.
+Welcome to the documentation for the **Pydantic AI MLX** sample project.
+It demonstrates how to execute a local MLX model through Outlines, wire it into
+a Pydantic AI agent, and observe the run with Pydantic Logfire.
 
 ## Overview
 
-This template ships with:
+This project ships with:
 
 - Dependency management via [uv](https://docs.astral.sh/uv/)
 - Automation using [`just`](https://github.com/casey/just)
 - Quality gates powered by Ruff, Ty, and pytest
 - Structured logging delivered through [Pydantic Logfire](https://pydantic.dev/logfire)
+- A `src/main.py` entry point that orchestrates the MLX-backed agent
 
 ## Getting Started
 
@@ -23,4 +26,9 @@ just docs    # build MkDocs documentation into the site/ directory
 
 ## Application Entry Point (`src/main.py`)
 
-The application’s main module lives at `src/main.py`. It configures Logfire with `send_to_logfire='if-token-present'`, so nothing leaves your machine unless a token is configured, and exposes a `main()` function that emits a structured startup log and prints the greeting. Run `just run` (or `uv run python -m src.main`) to exercise the entry point. The same behaviour is documented here so MkDocs keeps the landing page in sync with the code.
+The application’s main module lives at `src/main.py`. It configures Logfire with
+`send_to_logfire='if-token-present'`, creates an MLX-backed Outlines model,
+wraps it with a Pydantic AI `Agent`, and runs the agent once with a sample prompt.
+The console output mirrors the agent response, showing a “Thinking Process” block
+followed by the final answer. Run `just run` (or `uv run python -m src.main`)
+to exercise the entry point locally.
