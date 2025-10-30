@@ -55,10 +55,13 @@ async def main(user_input: str = DEFAULT_USER_INPUT) -> None:
     with logfire.span("Spanish tutor session"):
         logfire.info("Starting agent run", user_input=user_input)
         result = await agent.run(
-            user_input, model_settings=ModelSettings(extra_body={"max_tokens": 2048})
+            user_input,
+            model_settings=ModelSettings(extra_body={"max_tokens": MAX_TOKENS}),
         )
         logfire.info("Agent response received", output=result.output)
-        print(result.output)
+        thinking, answer = result.output.split("</think>", 1)
+        print("Thinking Process:\n", thinking.strip())
+        print("Final Answer:\n", answer.strip())
 
 
 if __name__ == "__main__":
