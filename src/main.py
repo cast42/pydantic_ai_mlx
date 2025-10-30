@@ -1,21 +1,65 @@
-"""Application entry point."""
+"""Application entry point for running the MLX-backed Spanish tutor agent."""
 
 from __future__ import annotations
 
+import asyncio
+import os
+from typing import Final
+
 import logfire
+from mlx_lm import load
+from pydantic_ai import Agent
+from pydantic_ai.models.outlines import OutlinesModel
+from pydantic_ai.settings import ModelSettings
 
-GREETING: str = "Hello from python-minimal-boilerplate!"
+MLX_MODEL_ENV: Final = "MLX_MODEL"
+DEFAULT_MODEL_ID: Final = "mlx-community/Qwen3-4B-Thinking-2507-4bit"
+DEFAULT_USER_INPUT: Final = "oh hey how are you?"
+MAX_TOKENS: Final = 2048
 
-# 'if-token-present' means nothing will be sent (and the example still works)
-# when a Logfire token/environment isn't configured.
 logfire.configure(send_to_logfire="if-token-present")
+logfire.instrument_pydantic_ai()
+
+_agent: Agent[None, str] | None = None
 
 
-def main() -> None:
-    """Emit a greeting via Logfire and stdout."""
-    logfire.info("application.startup", message=GREETING)
-    print(GREETING)
+def build_agent(model_id: str) -> Agent[None, str]:
+    """Construct a Pydantic AI agent backed by an Outlines MLX model."""
+
+    # Create the OutlinesModel wrapper
+    mlx_model = OutlinesModel.from_mlxlm(
+        *load(
+            model_id,
+            tokenizer_config={"eos_token": "<|endoftext|>", "trust_remote_code": True},
+        )
+    )
+    return Agent(
+        mlx_model,
+        system_prompt="You are a Spanish tutor. Help the user learn Spanish. ONLY respond in Spanish.",
+        output_type=str,
+    )
+
+
+def get_agent() -> Agent[None, str]:
+    """Return a cached agent instance, creating it on first use."""
+    global _agent
+    if _agent is None:
+        model_id = os.environ.get(MLX_MODEL_ENV, DEFAULT_MODEL_ID)
+        _agent = build_agent(model_id)
+    return _agent
+
+
+async def main(user_input: str = DEFAULT_USER_INPUT) -> None:
+    """Run the Spanish tutor agent once and print the response."""
+    agent = get_agent()
+    with logfire.span("Spanish tutor session"):
+        logfire.info("Starting agent run", user_input=user_input)
+        result = await agent.run(
+            user_input, model_settings=ModelSettings(extra_body={"max_tokens": 2048})
+        )
+        logfire.info("Agent response received", output=result.output)
+        print(result.output)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -1,29 +1,15 @@
-# python-minimal-boilerplate
+# Pydantic_ai MLX model logged by logfire
 
-Modern minimal boilerplate for a Python project with following developer dependencies:
-
-- from Astral
-  - package manager for dependency management: `uv`,
-  - linting: `rust`,
-  - type checking: `ty`
-- testing: `pytest`, and
-- documentation:`mkdocs`.
-
-It uses command runner `just` as a handy way to save and run project-specific commands.
-Logging is with [Pydantic Logfire](https://pydantic.dev/logfire) as an exampe, but you can easily switch to your own favorite logger.
+Small code example to get started.
 
 ## Installation
 
-### Create a new repository starting from the template
+### Clone the repo
 
-Create a new repository from the template. Open the browser at
-[https://github.com/cast42/python-minimal-boilerplate](https://github.com/cast42/python-minimal-boilerplate)
-and click `Use this template` (Create a new repository). Give your new repository a name. E.g. `new-repo-from-template`
-
-Next clone your new repository, generated from the template. Do not forget to replace url with url of the new repository:
+Clone this new repository:
 
 ```sh
-git clone https://github.com/cast42/new-repo-from-template.git
+git clone https://github.com/cast42/pydantic_ai_mlx.git
 ```
 
 ### Install uv if not already installed
@@ -35,22 +21,12 @@ git clone https://github.com/cast42/new-repo-from-template.git
 Change directory into the new cloned directory (Replace new-repo-from-template with the name of your repository):
 
 ```sh
-cd new-repo-from-template
+cd pydantic_ai_mlx
 ```
 
-### Add development tools
+### Optional: Logging with logfire
 
-```sh
-uv add --dev ruff ty pytest mkdocs
-```
-
-### Optional: Install logfire for logging
-
-```sh
-uv add logfire
-```
-
-Get your logfire token, copy the .env.example to .env and fill in value for  LOGFIRE.
+Get your logfire token, copy the .env.example to .env and fill in value for  LOGFIRE_TOKEN.
 The app calls `logfire.configure(send_to_logfire='if-token-present')`, so nothing
 is sent to Logfire unless you provide credentials.
 
@@ -137,3 +113,17 @@ Available recipes:
     test *args
     typing *args
 ```
+
+# Test the mlx model from the commandline
+
+To get commandline options for mlx_lm:
+
+```sh
+ uv run mlx_lm.generate --help
+ ```
+
+For Qwen models add extra eos-token and trust-remote-code option for the tokenizer.
+
+```sh
+uv run mlx_lm.generate --model mlx-community/Qwen3-4B-Thinking-2507-4bit --prompt "hoh hey how are you?"   --system-prompt "You are a Spanish tutor. Help the user learn Spanish. ONLY respond in Spanish." --max-tokens 2048 --extra-eos-token "<|endoftext|>"  --trust-remote-code
+ ```
